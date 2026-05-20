@@ -1,0 +1,28 @@
+<div class="max-w-xl mx-auto px-4 py-12">
+  <h1 class="text-2xl font-bold mb-6">Create a Post</h1>
+  <form id="postForm" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">What's on your mind?</label>
+      <textarea name="content" rows="6" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-y"></textarea>
+    </div>
+    <div id="postError" class="text-red-600 text-sm hidden"></div>
+    <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition font-medium">Publish</button>
+  </form>
+</div>
+<script>
+document.getElementById('postForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const errEl = document.getElementById('postError');
+  try {
+    const res = await fetch('/api/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: form.content.value })
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.message || 'Failed to create post'; errEl.classList.remove('hidden'); return; }
+    window.location.href = '/feed';
+  } catch (err) { errEl.textContent = 'Network error'; errEl.classList.remove('hidden'); }
+});
+</script>

@@ -1,0 +1,23 @@
+<nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+    <a href="/" class="text-xl font-bold text-indigo-600">EasyLiving</a>
+    <% if (typeof user !== 'undefined' && user) { %>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/feed" class="hover:text-indigo-600 transition">Feed</a>
+        <a href="/posts/create" class="hover:text-indigo-600 transition">New Post</a>
+        <a href="/profile" class="hover:text-indigo-600 transition">Profile</a>
+        <% if (user.role === 'admin') { %>
+          <a href="/admin" class="text-orange-600 hover:text-orange-800 font-medium transition">Admin</a>
+        <% } %>
+        <span class="text-gray-400">|</span>
+        <span class="text-gray-500"><%= user.username %></span>
+        <button id="logoutBtn" class="text-red-500 hover:text-red-700 transition text-sm">Logout</button>
+      </div>
+    <% } else { %>
+      <div class="flex items-center gap-3 text-sm">
+        <a href="/login" class="hover:text-indigo-600 transition">Login</a>
+        <a href="/register" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition">Sign Up</a>
+      </div>
+    <% } %>
+  </div>
+</nav>

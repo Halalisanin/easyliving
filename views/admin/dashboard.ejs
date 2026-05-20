@@ -1,0 +1,21 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-white rounded-xl shadow-sm border p-6 text-center">
+    <div class="text-3xl font-bold text-indigo-600" id="statUsers">-</div>
+    <div class="text-gray-500 text-sm mt-1">Total Users</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border p-6 text-center">
+    <div class="text-3xl font-bold text-indigo-600" id="statPosts">-</div>
+    <div class="text-gray-500 text-sm mt-1">Total Posts</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border p-6 text-center">
+    <div class="text-3xl font-bold text-indigo-600" id="statComments">-</div>
+    <div class="text-gray-500 text-sm mt-1">Total Comments</div>
+  </div>
+</div>
+<script>
+fetch('/api/admin/stats').then(r => r.json()).then(d => {
+  document.getElementById('statUsers').textContent = d.users;
+  document.getElementById('statPosts').textContent = d.posts;
+  document.getElementById('statComments').textContent = d.comments;
+}).catch(() => {});
+</script>

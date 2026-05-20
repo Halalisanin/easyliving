@@ -1,0 +1,74 @@
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Feed</h1>
+    <a href="/posts/create" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition">+ New Post</a>
+  </div>
+  <div id="postsContainer" class="space-y-4"></div>
+  <div id="loadingSpinner" class="text-center py-8 text-gray-400">Loading posts...</div>
+</div>
+<script>
+let page = 1;
+let loading = false;
+let hasMore = true;
+
+async function loadPosts() {
+  if (loading || !hasMore) return;
+  loading = true;
+  document.getElementById('loadingSpinner').classList.remove('hidden');
+  try {
+    const res = await fetch(`/api/posts?page=${page}&limit=10`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    const container = document.getElementById('postsContainer');
+    data.posts.forEach(post => {
+      const el = document.createElement('div');
+      el.className = 'bg-white rounded-xl shadow-sm border p-5';
+      el.innerHTML = `
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">${post.username[0].toUpperCase()}</div>
+          <div>
+            <span class="font-medium">${post.username}</span>
+            <span class="text-gray-400 text-xs ml-2">${new Date(post.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+        <a href="/posts/${post.id}" class="block text-gray-800 mb-3 leading-relaxed">${post.content}</a>
+        <div class="flex items-center gap-4 text-sm text-gray-500">
+          <button class="like-btn flex items-center gap-1 hover:text-red-500 transition" data-post-id="${post.id}" data-liked="${post.is_liked ? 'true' : 'false'}">
+            <span>${post.is_liked ? '❤️' : '🤍'}</span>
+            <span class="like-count">${post.like_count || 0}</span>
+          </button>
+          <span class="flex items-center gap-1">💬 ${post.comment_count || 0}</span>
+        </div>
+      `;
+      container.appendChild(el);
+    });
+    hasMore = data.posts.length === 10;
+    page++;
+  } catch (err) {
+    console.error(err);
+  } finally {
+    loading = false;
+    document.getElementById('loadingSpinner').classList.add('hidden');
+  }
+}
+
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.like-btn');
+  if (!btn) return;
+  const postId = btn.dataset.postId;
+  try {
+    const res = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      btn.dataset.liked = data.liked ? 'true' : 'false';
+      btn.querySelector('span:first-child').textContent = data.liked ? '❤️' : '🤍';
+      btn.querySelector('.like-count').textContent = data.likeCount;
+    }
+  } catch (err) { console.error(err); }
+});
+
+window.addEventListener('scroll', () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) loadPosts();
+});
+loadPosts();
+</script>

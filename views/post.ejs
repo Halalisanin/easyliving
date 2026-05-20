@@ -1,0 +1,60 @@
+<div class="max-w-xl mx-auto px-4 py-8">
+  <div class="bg-white rounded-xl shadow-sm border p-6 mb-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold"><%= post.username[0].toUpperCase() %></div>
+      <div>
+        <span class="font-medium"><%= post.username %></span>
+        <span class="text-gray-400 text-xs ml-2"><%= new Date(post.created_at).toLocaleDateString() %></span>
+      </div>
+    </div>
+    <p class="text-gray-800 leading-relaxed whitespace-pre-wrap"><%= post.content %></p>
+  </div>
+
+  <h2 class="font-semibold text-lg mb-4">Comments</h2>
+  <form id="commentForm" class="flex gap-2 mb-6">
+    <input type="text" name="text" placeholder="Write a comment..." required class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Post</button>
+  </form>
+  <div id="commentsContainer" class="space-y-3"></div>
+  <div id="commentError" class="text-red-600 text-sm mt-2 hidden"></div>
+</div>
+<script>
+async function loadComments() {
+  try {
+    const res = await fetch('/api/posts/<%= post.id %>');
+    const data = await res.json();
+    if (!res.ok) return;
+    const container = document.getElementById('commentsContainer');
+    container.innerHTML = '';
+    if (!data.post.comments || data.post.comments.length === 0) {
+      container.innerHTML = '<p class="text-gray-400 text-sm">No comments yet.</p>';
+      return;
+    }
+    data.post.comments.forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'bg-gray-50 rounded-lg p-3';
+      el.innerHTML = `<span class="font-medium text-sm">${c.username}</span> <span class="text-sm text-gray-800">${c.text}</span>`;
+      container.appendChild(el);
+    });
+  } catch (err) { console.error(err); }
+}
+
+document.getElementById('commentForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = e.target.text;
+  const errEl = document.getElementById('commentError');
+  try {
+    const res = await fetch('/api/posts/<%= post.id %>/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: input.value })
+    });
+    if (!res.ok) { const d = await res.json(); errEl.textContent = d.message; errEl.classList.remove('hidden'); return; }
+    input.value = '';
+    errEl.classList.add('hidden');
+    loadComments();
+  } catch (err) { errEl.textContent = 'Network error'; errEl.classList.remove('hidden'); }
+});
+
+loadComments();
+</script>
